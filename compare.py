@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.ticker import PercentFormatter
 from scipy.interpolate import make_interp_spline
+from backprop_alts.animo import mnist_test_ao
 from backprop_alts.reservoir import Reservoir, LinearReadout
 from backprop_alts.predictive_coding import BDPredictiveCoder, PCNet
 from backprop_alts.forwardforward import mnist_test_ff
@@ -164,6 +165,9 @@ def mnist_comparisons(n_epochs,
                                   n_epochs = n_epochs)
         scores["Predictive Coding (BiDir)"] = bdp
 
+        _, _, _, animo = mnist_test_ao(n_epochs)
+        scores["Animo"] = animo
+
         depth_scores[str(layer_count)] = scores
     return depth_scores
 
@@ -237,6 +241,8 @@ if __name__ == "__main__":
                                    mults = mults,
                                    n_layers = n_layers)
 
+    # print(all_scores)
+
     for n_layers_i, scores in all_scores.items():
         # TODO : do this in pandas or something
         labels = list(scores.keys())
@@ -249,4 +255,3 @@ if __name__ == "__main__":
         pretty_plot(times, accs, labels, f"Clock Time ({n_layers_i} layers)", "Time (s)", "Validation Accuracy")
         pretty_plot(samples, accs, labels, f"Sample Efficiency({n_layers_i} layers)", "Samples", "Validation Accuracy")
         
-
