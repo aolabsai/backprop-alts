@@ -230,7 +230,7 @@ def get_mults(n_layers,
 
 if __name__ == "__main__":
     n_epochs = 5
-    n_layers = [12]
+    n_layers = [2]
     in_dim = 784
     out_dim = 10
     # try to hit this number of neurons for comparability with different layer numbers
@@ -252,6 +252,8 @@ if __name__ == "__main__":
         samples = [list(scores[label]["epoch_samples"]) for label in labels]
         samples = np.cumsum(samples, axis = 1)
 
-        pretty_plot(times, accs, labels, f"Clock Time ({n_layers_i} layers)", "Time (s)", "Validation Accuracy")
-        pretty_plot(samples, accs, labels, f"Sample Efficiency({n_layers_i} layers)", "Samples", "Validation Accuracy")
+        # pretty_plot(times, accs, labels, f"Clock Time ({n_layers_i} layers)", "Time (s)", "Validation Accuracy")
+        # pretty_plot(samples, accs, labels, f"Sample Efficiency({n_layers_i} layers)", "Samples", "Validation Accuracy")
+        pretty_plot(times, accs, labels, f"Clock Time animo grayscale", "Time (s)", "Validation Accuracy")
+        pretty_plot(samples, accs, labels, f"Sample Efficiency animo grayscale", "Samples", "Validation Accuracy")
         

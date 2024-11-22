@@ -48,23 +48,32 @@ def prepare_data():
 def setup_agent():
     description = "Basic MNIST"
 
-    arch_i = [28 * 28]
+    arch_i = [8 for _ in range(28 * 28)]
     arch_z = [4]
     arch_c = []
 
     connector_function = "rand_conn"
-    connector_params = [588, 196, 784, 4]
+    connector_params = [4000, 1500, (8 * 28 * 28), 4]
 
     arch = ar.Arch(
         arch_i, arch_z, arch_c, connector_function, connector_params, description
     )
-    agent = ao.Agent(arch, save_meta=False, _steps=1100000)
+    agent = ao.Agent(arch, save_meta=False, _steps=1200000)
     return agent
 
 
 def downsample(arr, down=200):
     f = np.vectorize(lambda x: 1 if x >= down else 0)
     return f(arr)
+
+
+def proc_input(image):
+    if image.ndim == 1:
+        return np.array(
+            [np.array(list(format(pixel, "08b")), dtype=np.uint8) for pixel in image]
+        )
+    else:
+        return np.array([proc_input(sub_array) for sub_array in image])
 
 
 def label_transform(x):
@@ -77,8 +86,10 @@ def label_transform(x):
 def process_data():
     # data = unpickle()
     (mnist_train, mnist_train_labels), (mnist_val, mnist_val_labels) = prepare_data()
-    mnist_train = downsample(mnist_train)
-    mnist_val = downsample(mnist_val)
+    # mnist_train = downsample(mnist_train)
+    # mnist_val = downsample(mnist_val)
+    mnist_train = proc_input(mnist_train)
+    mnist_val = proc_input(mnist_val)
     mnist_train_z = proc_labels(mnist_train_labels)
     mnist_val_z = proc_labels(mnist_val_labels)
     return (mnist_train, mnist_train_z), (mnist_val, mnist_val_z)
@@ -106,12 +117,14 @@ def run_val_ao(agent, mnist_inputs, mnist_z):
     for j in tqdm.trange(len(mnist_inputs)):
         agent.reset_state()
         # print(x[j])
-        output = agent.next_state(
-            mnist_inputs[j].reshape(28 * 28),
-            DD=False,
-            Hamming=True,
-            unsequenced=True,
-        )
+        output = -1
+        for _ in range(3):
+            output = agent.next_state(
+                mnist_inputs[j].reshape(8 * 28 * 28),
+                DD=False,
+                Hamming=True,
+                unsequenced=True,
+            )
         # print(output)
         if np.array_equal(output, mnist_z[j]):
             correct_count += 1
@@ -152,7 +165,7 @@ def mnist_test_ao(n_epochs=3):
         # accs.extend(epoch_accs)
 
         start = time()
-        reshaped = mnist_train.reshape(len(mnist_train), 28 * 28)
+        reshaped = mnist_train.reshape(len(mnist_train), 8 * 28 * 28)
         agent.next_state_batch(reshaped, mnist_train_z, unsequenced=True)
         epoch_time = time() - start
         print(f"Epoch {epoch} Time: {epoch_time}")
